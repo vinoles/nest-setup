@@ -1,0 +1,212 @@
+[
+  {
+    "installDate": "2019-08-24T14:15:22Z",
+    "location": "C:\\Program Files\\App1",
+    "name": "App One",
+    "publisher": "Microsoft",
+    "size": 150000,
+    "version": "1.0.0",
+    "productCode": "PROD-001",
+    "isSystemComponent": true
+  },
+  {
+    "installDate": "2020-01-10T09:12:33Z",
+    "location": "C:\\Program Files\\App2",
+    "name": "App Two",
+    "publisher": "Adobe",
+    "size": 210000,
+    "version": "2.1.0",
+    "productCode": "PROD-002",
+    "isSystemComponent": false
+  },
+  {
+    "installDate": "2020-05-22T11:45:10Z",
+    "location": "C:\\Program Files\\App3",
+    "name": "App Three",
+    "publisher": "Google",
+    "size": 98000,
+    "version": "3.0.2",
+    "productCode": "PROD-003",
+    "isSystemComponent": false
+  },
+  {
+    "installDate": "2020-09-14T16:30:55Z",
+    "location": "C:\\Program Files\\App4",
+    "name": "App Four",
+    "publisher": "Oracle",
+    "size": 305000,
+    "version": "4.2.1",
+    "productCode": "PROD-004",
+    "isSystemComponent": true
+  },
+  {
+    "installDate": "2021-02-03T07:25:40Z",
+    "location": "C:\\Program Files\\App5",
+    "name": "App Five",
+    "publisher": "JetBrains",
+    "size": 275000,
+    "version": "5.0.0",
+    "productCode": "PROD-005",
+    "isSystemComponent": false
+  },
+  {
+    "installDate": "2021-04-18T12:14:22Z",
+    "location": "C:\\Program Files\\App6",
+    "name": "App Six",
+    "publisher": "Mozilla",
+    "size": 120000,
+    "version": "6.3.2",
+    "productCode": "PROD-006",
+    "isSystemComponent": false
+  },
+  {
+    "installDate": "2021-06-30T19:50:01Z",
+    "location": "C:\\Program Files\\App7",
+    "name": "App Seven",
+    "publisher": "Apple",
+    "size": 180000,
+    "version": "7.1.5",
+    "productCode": "PROD-007",
+    "isSystemComponent": true
+  },
+  {
+    "installDate": "2021-09-12T22:11:45Z",
+    "location": "C:\\Program Files\\App8",
+    "name": "App Eight",
+    "publisher": "IBM",
+    "size": 350000,
+    "version": "8.0.0",
+    "productCode": "PROD-008",
+    "isSystemComponent": true
+  },
+  {
+    "installDate": "2022-01-08T05:33:27Z",
+    "location": "C:\\Program Files\\App9",
+    "name": "App Nine",
+    "publisher": "SAP",
+    "size": 400000,
+    "version": "9.2.3",
+    "productCode": "PROD-009",
+    "isSystemComponent": false
+  },
+  {
+    "installDate": "2022-03-21T14:09:11Z",
+    "location": "C:\\Program Files\\App10",
+    "name": "App Ten",
+    "publisher": "Cisco",
+    "size": 260000,
+    "version": "10.4.1",
+    "productCode": "PROD-010",
+    "isSystemComponent": true
+  },
+  {
+    "installDate": "2022-05-17T10:00:00Z",
+    "location": "C:\\Program Files\\App11",
+    "name": "App Eleven",
+    "publisher": "Dell",
+    "size": 145000,
+    "version": "11.0.1",
+    "productCode": "PROD-011",
+    "isSystemComponent": false
+  },
+  {
+    "installDate": "2022-07-29T13:22:18Z",
+    "location": "C:\\Program Files\\App12",
+    "name": "App Twelve",
+    "publisher": "HP",
+    "size": 175000,
+    "version": "12.5.6",
+    "productCode": "PROD-012",
+    "isSystemComponent": true
+  },
+  {
+    "installDate": "2022-10-05T09:48:33Z",
+    "location": "C:\\Program Files\\App13",
+    "name": "App Thirteen",
+    "publisher": "Lenovo",
+    "size": 195000,
+    "version": "13.3.0",
+    "productCode": "PROD-013",
+    "isSystemComponent": false
+  },
+  {
+    "installDate": "2023-01-11T17:35:50Z",
+    "location": "C:\\Program Files\\App14",
+    "name": "App Fourteen",
+    "publisher": "Asus",
+    "size": 210000,
+    "version": "14.1.1",
+    "productCode": "PROD-014",
+    "isSystemComponent": true
+  },
+  {
+    "installDate": "2023-03-03T06:18:44Z",
+    "location": "C:\\Program Files\\App15",
+    "name": "App Fifteen",
+    "publisher": "Acer",
+    "size": 130000,
+    "version": "15.0.9",
+    "productCode": "PROD-015",
+    "isSystemComponent": false
+  },
+  {
+    "installDate": "2023-05-25T20:27:10Z",
+    "location": "C:\\Program Files\\App16",
+    "name": "App Sixteen",
+    "publisher": "Sony",
+    "size": 285000,
+    "version": "16.4.2",
+    "productCode": "PROD-016",
+    "isSystemComponent": true
+  },
+  {
+    "installDate": "2023-08-09T11:11:11Z",
+    "location": "C:\\Program Files\\App17",
+    "name": "App Seventeen",
+    "publisher": "Samsung",
+    "size": 320000,
+    "version": "17.2.7",
+    "productCode": "PROD-017",
+    "isSystemComponent": false
+  },
+  {
+    "installDate": "2023-10-31T23:59:59Z",
+    "location": "C:\\Program Files\\App18",
+    "name": "App Eighteen",
+    "publisher": "Intel",
+    "size": 220000,
+    "version": "18.0.0",
+    "productCode": "PROD-018",
+    "isSystemComponent": true
+  },
+  {
+    "installDate": "2024-01-15T08:08:08Z",
+    "location": "C:\\Program Files\\App19",
+    "name": "App Nineteen",
+    "publisher": "AMD",
+    "size": 240000,
+    "version": "19.6.3",
+    "productCode": "PROD-019",
+    "isSystemComponent": false
+  },
+  {
+    "installDate": "2024-03-20T14:44:44Z",
+    "location": "C:\\Program Files\\App20",
+    "name": "App Twenty",
+    "publisher": "Nvidia",
+    "size": 300000,
+    "version": "20.1.0",
+    "productCode": "PROD-020",
+    "isSystemComponent": true
+  },
+  {
+    "installDate": "2024-06-01T12:00:00Z",
+    "location": "C:\\Program Files\\App21",
+    "name": "App Twenty One",
+    "publisher": "VMware",
+    "size": 350000,
+    "version": "21.0.0",
+    "productCode": "PROD-021",
+    "isSystemComponent": false
+  }
+]

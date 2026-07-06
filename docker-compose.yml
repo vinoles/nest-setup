@@ -1,0 +1,85 @@
+services:
+  nest-setup-app:
+    container_name: nest-setup-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        DATABASE_URL: ${DATABASE_URL}
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    ports:
+      - "${FORWARD_APP_PORT:-3000}:3000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: ${DATABASE_URL}
+      DB_HOST: nest-setup-app-db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-db_name}
+      DB_USER: ${DB_USER:-db_user}
+      DB_PASSWORD: ${DB_PASSWORD:-db_password}
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      REDIS_HOST: ${REDIS_HOST:-nest-setup-app-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - .:/usr/src/app
+      - nest-setup-app-node-modules:/usr/src/app/node_modules
+      - nest-setup-app-bun-cache:/bun
+    networks:
+      - nest-setup-app-network
+    depends_on:
+      nest-setup-app-db:
+        condition: service_healthy
+      nest-setup-app-redis:
+        condition: service_started
+
+  nest-setup-app-db:
+    image: postgres:16-alpine
+    ports:
+      - "${FORWARD_DB_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: "${DB_NAME}"
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    volumes:
+      - nest-setup-app-db-data:/var/lib/postgresql/data
+    networks:
+      - nest-setup-app-network
+
+  nest-setup-app-redis:
+    image: redis:alpine
+    ports:
+      - "${FORWARD_REDIS_PORT:-6379}:6379"
+    volumes:
+      - nest-setup-app-redis-data:/data
+    networks:
+      - nest-setup-app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      retries: 3
+      timeout: 5s
+
+volumes:
+  nest-setup-app-node-modules:
+    driver: local
+  nest-setup-app-bun-cache:
+    driver: local
+  nest-setup-app-db-data:
+    driver: local
+  nest-setup-app-redis-data:
+    driver: local
+
+networks:
+  nest-setup-app-network:
+    driver: bridge

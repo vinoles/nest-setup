@@ -1,0 +1,74 @@
+{
+  "locations": [
+    {
+      "name": "string",
+      "address": "string",
+      "description": "string",
+      "userData": {},
+      "id": 0
+    }
+  ],
+  "policies": [
+    {
+      "nodeRoleId": 0,
+      "policyId": 0
+    }
+  ],
+  "settings": {
+    "trayicon": {
+      "product": "string",
+      "enabled": true,
+      "targets": [
+        "string"
+      ],
+      "options": {
+        "property1": {},
+        "property2": {}
+      }
+    },
+    "splashtop": {
+      "product": "string",
+      "enabled": true,
+      "targets": [
+        "string"
+      ],
+      "options": {
+        "property1": {},
+        "property2": {}
+      }
+    },
+    "teamviewer": {
+      "product": "string",
+      "enabled": true,
+      "targets": [
+        "string"
+      ],
+      "options": {
+        "property1": {},
+        "property2": {}
+      }
+    },
+    "backup": {
+      "product": "string",
+      "enabled": true,
+      "targets": [
+        "string"
+      ],
+      "options": {
+        "property1": {},
+        "property2": {}
+      }
+    },
+    "psa": {
+      "product": "string",
+      "enabled": true,
+      "targets": [
+        "string"
+      ],
+      "options": {
+        "property1": {},
+        "property2": {}
+      }
+    }
+  }
+}

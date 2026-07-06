@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Git
+.git
+.gitignore
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Tests
+coverage/
+.nyc_output/
+test/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env (NO copies secrets)
+.env
+.env.*
+!.env.example
+
+# Maps
+*.map
+
+# Temp
+.temp/
+.tmp/
