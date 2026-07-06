@@ -7,17 +7,16 @@ import {
 } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
+import { parseEnv } from '../config/env.schema';
 
 function resolveDatabaseUrl() {
-  if (process.env.DATABASE_URL) {
-    return process.env.DATABASE_URL;
+  const env = parseEnv(process.env);
+
+  if (env.NODE_ENV === 'test' && env.TEST_DATABASE_URL) {
+    return env.TEST_DATABASE_URL;
   }
 
-  if (process.env.NODE_ENV === 'test' && process.env.TEST_DATABASE_URL) {
-    return process.env.TEST_DATABASE_URL;
-  }
-
-  throw new Error('DATABASE_URL is required to initialize PrismaService');
+  return env.DATABASE_URL;
 }
 
 @Injectable()
@@ -26,14 +25,18 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   private readonly logger = new Logger(PrismaService.name);
-  private readonly canConnect = Boolean(process.env.DATABASE_URL);
+  private readonly canConnect: boolean;
 
   constructor() {
+    const databaseUrl = resolveDatabaseUrl();
+
     super({
       adapter: new PrismaPg({
-        connectionString: resolveDatabaseUrl(),
+        connectionString: databaseUrl,
       }),
     });
+
+    this.canConnect = Boolean(databaseUrl);
   }
 
   async onModuleInit() {
