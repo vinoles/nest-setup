@@ -25,7 +25,7 @@ This means:
 
 ### What happens
 1. The client sends `email` + `password`.
-2. `AuthService.signIn()` looks up the user through `UsersService`.
+2. `AuthService.signIn()` looks up the user through `UsersLookupService`.
 3. The password is verified with `bcrypt.compare()`.
 4. The service rejects inactive users.
 5. A JWT access token is issued with:
@@ -71,7 +71,7 @@ Each session stores:
 1. Extract bearer token from the `Authorization` header.
 2. Verify JWT signature and payload shape.
 3. Check whether the token `jti` is blocklisted in Redis.
-4. Load the user from `UsersService`.
+4. Load the user from `UsersLookupService`.
 5. Reject the request if the user is missing or inactive.
 6. Attach `request.user` and continue.
 

@@ -1,9 +1,29 @@
-# NestJS Setup Auth Test Example
+# NestJS Auth + Users API
 
-NestJS backend that exposes:
-- authentication endpoints with JWT access tokens and opaque refresh sessions
-- user management endpoints with role-based access control
-- documented local Docker-based development workflow
+Production-minded NestJS backend focused on authentication, session security, and role-based user management.
+
+This project demonstrates:
+- JWT access tokens with opaque refresh-session rotation
+- immediate access-token revocation through Redis-backed `jti` blocklisting
+- role-based authorization with custom Nest guards
+- PostgreSQL persistence through Prisma
+- Docker-first local development with Bun-based tooling
+
+## Why this project exists
+This repository is intentionally built as more than a CRUD demo. The goal is to show practical backend concerns such as:
+
+- stateless auth with controlled server-side session revocation
+- security tradeoffs (for example Redis `fail open` vs `fail closed` behavior)
+- modular NestJS architecture
+- testable infrastructure and auth flows
+
+## Tech Stack
+- **Runtime:** Node.js 22, NestJS 11
+- **Package manager / tooling:** Bun
+- **Database:** PostgreSQL 16 + Prisma
+- **Security infrastructure:** Redis for access-token revocation by `jti`
+- **Testing:** Jest + Supertest
+- **Container workflow:** Docker Compose
 
 ## Prerequisites
 - Docker
@@ -107,8 +127,8 @@ make prisma-seed
 ```
 
 ## Local URLs
-- API: `http://localhost:${PORT}`
-- Swagger: `http://localhost:${PORT}/api/docs`
+- API: `http://localhost:3000` (or the value of `FORWARD_APP_PORT`)
+- Swagger: `http://localhost:3000/api/docs` (or the forwarded app port)
 - Postgres: forwarded from Docker Compose
 - Redis: forwarded from Docker Compose
 
@@ -164,6 +184,7 @@ Responsible for:
 - logout
 - JWT signing
 - request protection through `AuthGuard`
+- immediate access-token invalidation through Redis blocklisting
 
 Current auth model:
 - short-lived JWT access tokens
@@ -171,6 +192,15 @@ Current auth model:
 - revoked access-token JTIs stored in Redis until token expiry
 - refresh token lookup optimized with SHA-256 lookup + bcrypt verification
 - route protection handled by a custom guard instead of Passport strategy
+- fail-open behavior if Redis is temporarily unavailable
+
+### UsersLookupModule
+Dedicated read-only dependency for authentication and guard-time user resolution.
+
+Why it exists:
+- `AuthModule` only needs user lookup, not the full `UsersService` surface
+- this split removes the circular dependency between `AuthModule` and `UsersModule`
+- the architecture stays explicit about what auth actually depends on
 
 ### UsersModule
 Responsible for:
@@ -197,6 +227,13 @@ Currently available documents:
 - `doc/inactive-user-auth-enforcement.md`
 - `doc/inactive-user-forbidden-response.md`
 - `doc/auth-guard-users-service-di.md`
+
+## Notable Technical Decisions
+- **Refresh sessions live in PostgreSQL** while **revoked access tokens live in Redis**
+- **Redis is not used as a generic cache**; it is intentionally scoped to token revocation
+- **Redis fail-open behavior** prioritizes API availability when the revocation store is temporarily unavailable
+- **Auth depends on `UsersLookupModule`**, not the full `UsersModule`, to avoid circular module dependencies
+- **Email lookup is normalized** to avoid auth failures caused by casing or accidental whitespace
 
 ## Development Notes
 - the app runs in Docker and mounts the repository into the container
