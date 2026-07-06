@@ -10,7 +10,7 @@ RUN npm install -g bun && \
 
 USER node
 
-COPY --chown=node:node package.json bun.lockb* ./
+COPY --chown=node:node package.json bun.lock* ./
 COPY --chown=node:node prisma ./prisma
 COPY --chown=node:node prisma.config.ts ./
 
