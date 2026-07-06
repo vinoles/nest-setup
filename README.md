@@ -3,7 +3,7 @@
 NestJS backend that exposes:
 - authentication endpoints with JWT access tokens and opaque refresh sessions
 - user management endpoints with role-based access control
-- MDM endpoints backed by a NinjaOne integration
+- documented local Docker-based development workflow
 
 ## Prerequisites
 - Docker
@@ -48,12 +48,12 @@ make run-dev
 ### 4. Install dependencies and generate Prisma artifacts
 If this is the first local run, install dependencies inside the app container:
 ```bash
-docker compose exec nest-setup-app pnpm install
+docker compose exec nest-setup-app bun install
 ```
 
 Prisma client is generated automatically by `postinstall`, but you can run it explicitly if needed:
 ```bash
-docker compose exec nest-setup-app pnpm prisma:generate
+docker compose exec nest-setup-app bunx prisma generate
 ```
 
 ### 5. Apply migrations and seed data
@@ -65,8 +65,8 @@ make prisma-seed
 
 Or with Docker Compose directly:
 ```bash
-docker compose exec nest-setup-app pnpm exec prisma migrate dev
-docker compose exec nest-setup-app pnpm prisma:seed
+docker compose exec nest-setup-app bunx prisma migrate dev
+docker compose exec nest-setup-app bunx prisma db seed
 ```
 
 ### 6. Run the tests
@@ -77,8 +77,8 @@ make run-test-e2e
 
 Or with Docker Compose directly:
 ```bash
-docker compose exec nest-setup-app pnpm run test
-docker compose exec nest-setup-app pnpm run test:e2e
+docker compose exec nest-setup-app bun run test
+docker compose exec nest-setup-app bun run test:e2e
 ```
 
 ### 7. Run the app in watch mode
@@ -89,7 +89,7 @@ make run-dev
 
 Or with Docker Compose directly:
 ```bash
-docker compose exec nest-setup-app pnpm run start:dev
+docker compose exec nest-setup-app bun run start:dev
 ```
 
 ## Common Local Commands
@@ -124,9 +124,28 @@ Examples include users such as:
 
 ## Architecture Overview
 The application is organized around four top-level modules registered in `AppModule`:
+- `RedisModule`
 - `PrismaModule`
 - `AuthModule`
 - `UsersModule`
+
+### RedisModule
+Redis is kept intentionally as a **security infrastructure component**, not as a generic cache.
+
+Current responsibility:
+- store revoked JWT access-token `jti` values in a short-lived blocklist
+- allow immediate access-token invalidation after logout while keeping the API stateless
+
+Why this exists:
+- refresh sessions are persisted in PostgreSQL via Prisma
+- revoking a refresh token alone does **not** invalidate an already-issued access token
+- Redis gives us a TTL-backed revocation store keyed by `jti`, so logout can take effect immediately
+
+What Redis is **not** used for today:
+- refresh-token persistence
+- rate limiting
+- generic response caching
+- job queues
 
 ### PrismaModule
 - global infrastructure module
@@ -144,6 +163,7 @@ Responsible for:
 Current auth model:
 - short-lived JWT access tokens
 - opaque refresh tokens persisted in the database
+- revoked access-token JTIs stored in Redis until token expiry
 - refresh token lookup optimized with SHA-256 lookup + bcrypt verification
 - route protection handled by a custom guard instead of Passport strategy
 
@@ -162,7 +182,6 @@ Authorization rules are layered with:
 ## API Conventions
 - Users endpoints are under `/api/v1/users`
 - Auth endpoints are under `/api/v1/auth`
-- MDM endpoints are under `/api/v1/mdm`
 - Swagger is exposed at `/api/docs`
 
 ## Additional Documentation
