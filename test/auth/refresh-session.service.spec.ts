@@ -240,9 +240,9 @@ describe('RefreshSessionService', () => {
 
       mockFindUnique.mockResolvedValue(oldSession);
       mockBcrypt.compare.mockResolvedValue(true as never);
-      // Transaction: create returns the new session, update marks old as replaced
+      // Transaction: create returns the new session, updateMany marks old as replaced
       mockCreate.mockResolvedValue({ ...buildSession(), id: newSessionId, expiresAt: freshExpiresAt });
-      mockUpdate.mockResolvedValue({});
+      mockUpdateMany.mockResolvedValueOnce({ count: 1 });
 
       await service.rotateToken('rt_old-token', freshExpiresAt, 'fresh-access-jti', 123456);
 
@@ -266,7 +266,7 @@ describe('RefreshSessionService', () => {
       mockFindUnique.mockResolvedValue(oldSession);
       mockBcrypt.compare.mockResolvedValue(true as never);
       mockCreate.mockResolvedValue({ ...buildSession(), id: newSessionId });
-      mockUpdate.mockResolvedValue({});
+      mockUpdateMany.mockResolvedValueOnce({ count: 1 });
 
       await service.rotateToken(
         'rt_old-token',
@@ -275,15 +275,19 @@ describe('RefreshSessionService', () => {
         123456,
       );
 
-      expect(mockUpdate).toHaveBeenCalledWith(
+      expect(mockUpdateMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { id: oldSession.id },
+          where: {
+            id: oldSession.id,
+            replacedBy: null,
+            revokedAt: null,
+          },
           data: expect.objectContaining({ replacedBy: newSessionId }),
         }),
       );
 
       // Must NOT store the plain token in any field
-      const updateData = mockUpdate.mock.calls[0][0].data;
+      const updateData = mockUpdateMany.mock.calls[0][0].data;
       expect(Object.values(updateData).some((v) => String(v).startsWith('rt_'))).toBe(false);
     });
 
@@ -293,7 +297,7 @@ describe('RefreshSessionService', () => {
       mockFindUnique.mockResolvedValue(oldSession);
       mockBcrypt.compare.mockResolvedValue(true as never);
       mockCreate.mockResolvedValue({ ...buildSession(), id: 'new-id' });
-      mockUpdate.mockResolvedValue({});
+      mockUpdateMany.mockResolvedValueOnce({ count: 1 });
 
       await service.rotateToken(
         'rt_old-token',
@@ -354,6 +358,40 @@ describe('RefreshSessionService', () => {
 
       expect(mockUpdateMany).toHaveBeenCalledWith({
         where: { familyId: 'revoked-family' },
+        data: { revokedAt: expect.any(Date) },
+      });
+    });
+
+    it('revokes the family when a concurrent rotation wins the compare-and-swap', async () => {
+      const oldSession = buildSession({ familyId: 'race-family' });
+
+      mockFindUnique.mockResolvedValue(oldSession);
+      mockBcrypt.compare.mockResolvedValue(true as never);
+      mockCreate.mockResolvedValue({ ...buildSession(), id: 'new-session-after-race' });
+      mockUpdateMany
+        .mockResolvedValueOnce({ count: 0 })
+        .mockResolvedValueOnce({ count: 2 });
+
+      await expect(
+        service.rotateToken(
+          'rt_old-token',
+          new Date(Date.now() + 7 * DAY_MS),
+          'fresh-access-jti',
+          123456,
+        ),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+
+      expect(mockUpdateMany).toHaveBeenNthCalledWith(1, {
+        where: {
+          id: oldSession.id,
+          replacedBy: null,
+          revokedAt: null,
+        },
+        data: { replacedBy: 'new-session-after-race' },
+      });
+
+      expect(mockUpdateMany).toHaveBeenNthCalledWith(2, {
+        where: { familyId: 'race-family' },
         data: { revokedAt: expect.any(Date) },
       });
     });

@@ -213,8 +213,9 @@ export class RefreshSessionService {
     const newTokenHash = await hashToken(newPlainToken);
     const newTokenLookup = computeLookup(newPlainToken);
 
-    // Transaction: create new session → get its ID → mark old as replaced with that ID.
-    // replacedBy stores the new session's cuid, never a plain token.
+    // Transaction: create new session → atomically mark old session as replaced iff it is
+    // still active. If another request rotated/revoked the same token concurrently, the
+    // conditional update affects 0 rows and we revoke the family.
     await this.prisma.$transaction(async (tx) => {
       const newSession = await tx.refreshSession.create({
         data: {
@@ -228,10 +229,25 @@ export class RefreshSessionService {
         },
       });
 
-      await tx.refreshSession.update({
-        where: { id: oldSession.id },
+      const updateResult = await tx.refreshSession.updateMany({
+        where: {
+          id: oldSession.id,
+          replacedBy: null,
+          revokedAt: null,
+        },
         data: { replacedBy: newSession.id },
       });
+
+      if (updateResult.count !== 1) {
+        await tx.refreshSession.updateMany({
+          where: { familyId: oldSession.familyId },
+          data: { revokedAt: new Date() },
+        });
+
+        throw new ForbiddenException(
+          'Refresh token reuse detected. Session revoked for security.',
+        );
+      }
     });
 
     return { token: newPlainToken, expiresAt };
