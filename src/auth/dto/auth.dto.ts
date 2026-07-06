@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty } from 'class-validator';
 
 export class AuthDto {
@@ -6,6 +7,7 @@ export class AuthDto {
     example: 'admin@example.test',
     description: 'User email used to authenticate',
   })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsNotEmpty()
   @IsEmail()
   email: string;

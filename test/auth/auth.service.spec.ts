@@ -141,6 +141,28 @@ describe('AuthService', () => {
       ).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
+    it('should pass the provided email to the lookup dependency during sign in', async () => {
+      mockUsersLookupService.findOneUserByEmail.mockResolvedValue({
+        id: 1,
+        email: 'test@example.com',
+        role: Role.ADMIN,
+        isActive: true,
+        password: await bcrypt.hash('password', 10),
+      });
+
+      mockJwtService.signAsync.mockResolvedValue('fake-jwt-token');
+      mockRefreshSessionService.createSession.mockResolvedValue({
+        token: 'rt_fake-refresh-token',
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      });
+
+      await service.signIn('  TEST@EXAMPLE.COM  ', 'password');
+
+      expect(mockUsersLookupService.findOneUserByEmail).toHaveBeenCalledWith(
+        '  TEST@EXAMPLE.COM  ',
+      );
+    });
+
     it('should return unauthorized for wrong password', async () => {
       mockUsersLookupService.findOneUserByEmail.mockResolvedValue({
         id: 1,

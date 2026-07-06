@@ -18,6 +18,10 @@ import { UserDto, UsersListResponseDto } from './dto/user-response.dto';
 
 const SALT_ROUNDS = 10;
 
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -29,7 +33,7 @@ export class UsersService {
         data: {
           firstName: createUserDto.firstName,
           lastName: createUserDto.lastName,
-          email: createUserDto.email.toLowerCase(),
+          email: normalizeEmail(createUserDto.email),
           password,
           role: createUserDto.role ?? Role.USER,
           isActive: createUserDto.isActive ?? true,
@@ -178,9 +182,10 @@ export class UsersService {
 
   async findOneUserByEmail(email: string): Promise<User> {
     try {
-      const user = await this.prisma.user.findUnique({ where: { email } });
+      const normalizedEmail = normalizeEmail(email);
+      const user = await this.prisma.user.findUnique({ where: { email: normalizedEmail } });
       if (!user) {
-        throw new NotFoundException(`User with email ${email} not found`);
+        throw new NotFoundException(`User with email ${normalizedEmail} not found`);
       }
       return user;
     } catch (error: unknown) {

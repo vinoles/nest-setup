@@ -165,6 +165,27 @@ describe('Auth login + refresh + logout (e2e)', () => {
     });
   });
 
+  it('accepts uppercase email input by normalizing the lookup', async () => {
+    mockUsersLookupService.findOneUserByEmail.mockResolvedValueOnce(
+      buildUser({
+        email: 'admin@example.test',
+        password: await bcrypt.hash('AdminPass123!', 10),
+      }),
+    );
+
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/login')
+      .send({
+        email: '  ADMIN@EXAMPLE.TEST  ',
+        password: 'AdminPass123!',
+      })
+      .expect(200);
+
+    expect(mockUsersLookupService.findOneUserByEmail).toHaveBeenCalledWith(
+      'ADMIN@EXAMPLE.TEST',
+    );
+  });
+
   it('returns 401 for a wrong password', async () => {
     mockUsersLookupService.findOneUserByEmail.mockResolvedValueOnce(
       buildUser({
