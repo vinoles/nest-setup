@@ -18,7 +18,7 @@ import { AuthService } from '../../src/auth/auth.service';
 import { RefreshSessionService } from '../../src/auth/refresh-session.service';
 import { TokenBlocklistService } from '../../src/auth/token-blocklist.service';
 import { REDIS_CLIENT } from '../../src/redis/redis.module';
-import { UsersService } from '../../src/users/users.service';
+import { UsersLookupService } from '../../src/users/users-lookup.service';
 
 // ── Shared mock implementations ─────────────────────────────────────────────────────
 const mockValidateToken = jest.fn();
@@ -42,8 +42,8 @@ jest.mock('../../src/auth/refresh-session.service', () => ({
   },
 }));
 
-jest.mock('../../src/users/users.service', () => ({
-  UsersService: class UsersService {},
+jest.mock('../../src/users/users-lookup.service', () => ({
+  UsersLookupService: class UsersLookupService {},
 }));
 
 jest.mock('../../src/prisma/prisma.service', () => ({
@@ -72,7 +72,7 @@ describe('Auth login + refresh + logout (e2e)', () => {
   let app: INestApplication<App>;
   let redisStore: Map<string, string>;
 
-  const mockUsersService: {
+  const mockUsersLookupService: {
     findOneUserByEmail: jest.Mock;
     findOneUserById: jest.Mock;
   } = {
@@ -109,7 +109,7 @@ describe('Auth login + refresh + logout (e2e)', () => {
         AuthService,
         TokenBlocklistService,
         { provide: REDIS_CLIENT, useValue: redisMock },
-        { provide: UsersService, useValue: mockUsersService },
+        { provide: UsersLookupService, useValue: mockUsersLookupService },
         RefreshSessionService,
       ],
     }).compile();
@@ -129,7 +129,7 @@ describe('Auth login + refresh + logout (e2e)', () => {
   // ── LOGIN ─────────────────────────────────────────────────────────────
 
   it('returns 200 and both tokens for valid credentials', async () => {
-    mockUsersService.findOneUserByEmail.mockResolvedValueOnce(
+    mockUsersLookupService.findOneUserByEmail.mockResolvedValueOnce(
       buildUser({
         email: 'admin@example.test',
         password: await bcrypt.hash('AdminPass123!', 10),
@@ -166,7 +166,7 @@ describe('Auth login + refresh + logout (e2e)', () => {
   });
 
   it('returns 401 for a wrong password', async () => {
-    mockUsersService.findOneUserByEmail.mockResolvedValueOnce(
+    mockUsersLookupService.findOneUserByEmail.mockResolvedValueOnce(
       buildUser({
         password: await bcrypt.hash('CorrectPass123!', 10),
       }),
@@ -185,7 +185,7 @@ describe('Auth login + refresh + logout (e2e)', () => {
   });
 
   it('returns 401 when the user does not exist', async () => {
-    mockUsersService.findOneUserByEmail.mockRejectedValueOnce(
+    mockUsersLookupService.findOneUserByEmail.mockRejectedValueOnce(
       new NotFoundException('User with email missing@example.test not found'),
     );
 
@@ -202,7 +202,7 @@ describe('Auth login + refresh + logout (e2e)', () => {
   });
 
   it('returns 403 when the user account is inactive', async () => {
-    mockUsersService.findOneUserByEmail.mockResolvedValueOnce(
+    mockUsersLookupService.findOneUserByEmail.mockResolvedValueOnce(
       buildUser({
         email: 'inactive@example.test',
         isActive: false,
@@ -248,7 +248,7 @@ describe('Auth login + refresh + logout (e2e)', () => {
       familyId: 'family-1',
     });
 
-    mockUsersService.findOneUserById.mockResolvedValueOnce(
+    mockUsersLookupService.findOneUserById.mockResolvedValueOnce(
       buildUser({ id: 1, email: 'admin@example.test', role: 'ADMIN' }),
     );
 
@@ -287,7 +287,7 @@ describe('Auth login + refresh + logout (e2e)', () => {
       familyId: 'family-1',
     });
 
-    mockUsersService.findOneUserById.mockResolvedValueOnce(
+    mockUsersLookupService.findOneUserById.mockResolvedValueOnce(
       buildUser({ id: 1, email: 'inactive@example.test', isActive: false }),
     );
 
@@ -312,7 +312,7 @@ describe('Auth login + refresh + logout (e2e)', () => {
       jti: 'logout-success-jti',
     });
 
-    mockUsersService.findOneUserById.mockResolvedValue(buildUser({ id: 1 }));
+    mockUsersLookupService.findOneUserById.mockResolvedValue(buildUser({ id: 1 }));
     mockRevokeSession.mockResolvedValueOnce({
       accessTokenJti: 'logout-success-jti',
       accessTokenExp: Math.floor(Date.now() / 1000) + 900,
@@ -341,7 +341,7 @@ describe('Auth login + refresh + logout (e2e)', () => {
   });
 
   it('returns 401 on logout for an invalid refresh token', async () => {
-    mockUsersService.findOneUserById.mockResolvedValue(buildUser({ id: 1 }));
+    mockUsersLookupService.findOneUserById.mockResolvedValue(buildUser({ id: 1 }));
     mockRevokeSession.mockRejectedValueOnce(
       new UnauthorizedException('Invalid or expired refresh token'),
     );

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../../src/auth/auth.service';
-import { UsersService } from '../../src/users/users.service';
+import { UsersLookupService } from '../../src/users/users-lookup.service';
 import { RefreshSessionService } from '../../src/auth/refresh-session.service';
 import { TokenBlocklistService } from '../../src/auth/token-blocklist.service';
 import { JwtService } from '@nestjs/jwt';
@@ -42,7 +42,7 @@ jest.mock('../../src/prisma/prisma.service', () => ({
 describe('AuthService', () => {
   let service: AuthService;
 
-  const mockUsersService = {
+  const mockUsersLookupService = {
     findOneUserByEmail: jest.fn(),
     findOneUserById: jest.fn(),
   };
@@ -78,7 +78,7 @@ describe('AuthService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
-        { provide: UsersService, useValue: mockUsersService },
+        { provide: UsersLookupService, useValue: mockUsersLookupService },
         { provide: JwtService, useValue: mockJwtService },
         { provide: RefreshSessionService, useValue: mockRefreshSessionService },
         { provide: ConfigService, useValue: mockConfigService },
@@ -95,7 +95,7 @@ describe('AuthService', () => {
 
   describe('signIn', () => {
     it('should return access_token and refresh_token on successful sign in', async () => {
-      mockUsersService.findOneUserByEmail.mockResolvedValue({
+      mockUsersLookupService.findOneUserByEmail.mockResolvedValue({
         id: 1,
         email: 'test@example.com',
         role: Role.ADMIN,
@@ -132,7 +132,7 @@ describe('AuthService', () => {
     });
 
     it('should return unauthorized when user is not found', async () => {
-      mockUsersService.findOneUserByEmail.mockRejectedValue(
+      mockUsersLookupService.findOneUserByEmail.mockRejectedValue(
         new NotFoundException('User with email missing@example.com not found'),
       );
 
@@ -142,7 +142,7 @@ describe('AuthService', () => {
     });
 
     it('should return unauthorized for wrong password', async () => {
-      mockUsersService.findOneUserByEmail.mockResolvedValue({
+      mockUsersLookupService.findOneUserByEmail.mockResolvedValue({
         id: 1,
         email: 'test@example.com',
         role: Role.ADMIN,
@@ -156,7 +156,7 @@ describe('AuthService', () => {
     });
 
     it('should return forbidden for an inactive user', async () => {
-      mockUsersService.findOneUserByEmail.mockResolvedValue({
+      mockUsersLookupService.findOneUserByEmail.mockResolvedValue({
         id: 1,
         email: 'test@example.com',
         role: Role.ADMIN,
@@ -181,7 +181,7 @@ describe('AuthService', () => {
         familyId: 'family-1',
       });
 
-      mockUsersService.findOneUserById.mockResolvedValue({
+      mockUsersLookupService.findOneUserById.mockResolvedValue({
         id: 1,
         email: 'test@example.com',
         role: Role.ADMIN,
@@ -225,7 +225,7 @@ describe('AuthService', () => {
         familyId: 'family-1',
       });
 
-      mockUsersService.findOneUserById.mockResolvedValue({
+      mockUsersLookupService.findOneUserById.mockResolvedValue({
         id: 1,
         email: 'test@example.com',
         role: Role.ADMIN,

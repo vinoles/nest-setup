@@ -9,7 +9,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Role } from '@prisma/client';
 import { AuthGuard } from '../../src/auth/auth.guard';
 import { TokenBlocklistService } from '../../src/auth/token-blocklist.service';
-import { UsersService } from '../../src/users/users.service';
+import { UsersLookupService } from '../../src/users/users-lookup.service';
 
 const VALID_PAYLOAD = {
   sub: 1,
@@ -26,7 +26,7 @@ describe('AuthGuard', () => {
     verifyAsync: jest.fn(),
   };
 
-  const mockUsersService = {
+  const mockUsersLookupService = {
     findOneUserById: jest.fn(),
   };
 
@@ -43,7 +43,7 @@ describe('AuthGuard', () => {
       providers: [
         AuthGuard,
         { provide: JwtService, useValue: mockJwtService },
-        { provide: UsersService, useValue: mockUsersService },
+        { provide: UsersLookupService, useValue: mockUsersLookupService },
         { provide: TokenBlocklistService, useValue: mockTokenBlocklistService },
       ],
     }).compile();
@@ -57,7 +57,7 @@ describe('AuthGuard', () => {
     } as Record<string, unknown>;
 
     mockJwtService.verifyAsync.mockResolvedValue(VALID_PAYLOAD);
-    mockUsersService.findOneUserById.mockResolvedValue({ id: 1, isActive: true });
+    mockUsersLookupService.findOneUserById.mockResolvedValue({ id: 1, isActive: true });
 
     await expect(guard.canActivate(createExecutionContext(request))).resolves.toBe(true);
 
@@ -77,7 +77,7 @@ describe('AuthGuard', () => {
       UnauthorizedException,
     );
 
-    expect(mockUsersService.findOneUserById).not.toHaveBeenCalled();
+    expect(mockUsersLookupService.findOneUserById).not.toHaveBeenCalled();
   });
 
   it('rejects inactive users with a valid JWT', async () => {
@@ -91,7 +91,7 @@ describe('AuthGuard', () => {
       email: 'inactive@example.test',
       role: Role.USER,
     });
-    mockUsersService.findOneUserById.mockResolvedValue({ id: 2, isActive: false });
+    mockUsersLookupService.findOneUserById.mockResolvedValue({ id: 2, isActive: false });
 
     await expect(guard.canActivate(createExecutionContext(request))).rejects.toThrow(
       new ForbiddenException('User account is inactive'),
@@ -110,7 +110,9 @@ describe('AuthGuard', () => {
       sub: 999,
       email: 'missing@example.test',
     });
-    mockUsersService.findOneUserById.mockRejectedValue(new NotFoundException('User 999 not found'));
+    mockUsersLookupService.findOneUserById.mockRejectedValue(
+      new NotFoundException('User 999 not found'),
+    );
 
     await expect(guard.canActivate(createExecutionContext(request))).rejects.toBeInstanceOf(
       UnauthorizedException,
@@ -133,7 +135,7 @@ describe('AuthGuard', () => {
       UnauthorizedException,
     );
 
-    expect(mockUsersService.findOneUserById).not.toHaveBeenCalled();
+    expect(mockUsersLookupService.findOneUserById).not.toHaveBeenCalled();
   });
 });
 

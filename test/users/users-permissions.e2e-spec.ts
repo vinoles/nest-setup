@@ -12,6 +12,7 @@ import { buildBearerToken, configureJwtTestEnv, createTestAccessToken } from '..
 import { CreateUserDto } from '../../src/users/dto/create-user.dto';
 import { UpdateUserDto } from '../../src/users/dto/update-user.dto';
 import { UsersController } from '../../src/users/users.controller';
+import { UsersLookupService } from '../../src/users/users-lookup.service';
 import { UsersService } from '../../src/users/users.service';
 
 describe('Users permissions (e2e)', () => {
@@ -42,6 +43,7 @@ describe('Users permissions (e2e)', () => {
       controllers: [UsersController],
       providers: [
         { provide: UsersService, useValue: mockUsersService },
+        { provide: UsersLookupService, useValue: mockUsersService },
         { provide: TokenBlocklistService, useValue: { isBlocked: jest.fn().mockResolvedValue(false) } },
         AuthGuard,
         RolesGuard,

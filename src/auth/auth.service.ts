@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
-import { UsersService } from '../users/users.service';
+import { UsersLookupService } from '../users/users-lookup.service';
 import * as bcrypt from 'bcrypt';
 import ms, { type StringValue } from 'ms';
 import { JwtService } from '@nestjs/jwt';
@@ -26,7 +26,7 @@ type AccessTokenIssueResult = {
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
+    private usersLookupService: UsersLookupService,
     private jwtService: JwtService,
     private refreshSessionService: RefreshSessionService,
     private configService: ConfigService,
@@ -40,7 +40,7 @@ export class AuthService {
     let user;
 
     try {
-      user = await this.usersService.findOneUserByEmail(email);
+      user = await this.usersLookupService.findOneUserByEmail(email);
     } catch (error: unknown) {
       if (error instanceof NotFoundException) {
         throw new UnauthorizedException('Invalid credentials');
@@ -77,7 +77,7 @@ export class AuthService {
   ): Promise<{ access_token: string; refresh_token: string }> {
     const { userId } = await this.refreshSessionService.validateToken(refresh_token);
 
-    const user = await this.usersService.findOneUserById(userId);
+    const user = await this.usersLookupService.findOneUserById(userId);
     this.assertUserIsActive(user.isActive);
 
     const { access_token, accessTokenJti, accessTokenExp } =

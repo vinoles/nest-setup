@@ -1,16 +1,16 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import { RefreshSessionService } from './refresh-session.service';
 import { TokenBlocklistService } from './token-blocklist.service';
-import { UsersModule } from '../users/users.module';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { UsersLookupModule } from '../users/users-lookup.module';
 
 @Module({
   imports: [
-    forwardRef(() => UsersModule),
+    UsersLookupModule,
     JwtModule.registerAsync({
       global: true,
       imports: [ConfigModule],

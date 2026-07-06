@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthController } from '../../src/auth/auth.controller';
 import { AuthService } from '../../src/auth/auth.service';
 import { RefreshSessionService } from '../../src/auth/refresh-session.service';
-import { UsersService } from '../../src/users/users.service';
+import { UsersLookupService } from '../../src/users/users-lookup.service';
 
 // Mock RefreshSessionService to break the PrismaService dependency chain
 jest.mock('../../src/auth/refresh-session.service', () => ({
@@ -15,8 +15,8 @@ jest.mock('../../src/auth/refresh-session.service', () => ({
   },
 }));
 
-jest.mock('../../src/users/users.service', () => ({
-  UsersService: class UsersService {},
+jest.mock('../../src/users/users-lookup.service', () => ({
+  UsersLookupService: class UsersLookupService {},
 }));
 
 jest.mock('../../src/prisma/prisma.service', () => ({
@@ -47,7 +47,7 @@ describe('AuthController', () => {
       controllers: [AuthController],
       providers: [
         AuthService,
-        { provide: UsersService, useValue: {} },
+        { provide: UsersLookupService, useValue: {} },
         RefreshSessionService,
         { provide: AuthService, useValue: mockAuthService },
       ],

@@ -9,7 +9,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { Role } from '@prisma/client';
-import { UsersService } from '../users/users.service';
+import { UsersLookupService } from '../users/users-lookup.service';
 import { TokenBlocklistService } from './token-blocklist.service';
 
 type JwtPayload = {
@@ -26,7 +26,7 @@ const INACTIVE_USER_MESSAGE = 'User account is inactive';
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
-    private readonly usersService: UsersService,
+    private readonly usersLookupService: UsersLookupService,
     private readonly tokenBlocklistService: TokenBlocklistService,
   ) {}
 
@@ -73,7 +73,7 @@ export class AuthGuard implements CanActivate {
 
   private async findActiveUser(userId: number): Promise<{ isActive: boolean }> {
     try {
-      return await this.usersService.findOneUserById(userId);
+      return await this.usersLookupService.findOneUserById(userId);
     } catch (error: unknown) {
       if (error instanceof NotFoundException) {
         throw new UnauthorizedException();
