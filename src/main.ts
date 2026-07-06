@@ -1,13 +1,17 @@
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { SWAGGER_BEARER_SCHEME } from './common/constants/app.constants';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { PrismaService } from './prisma/prisma.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalFilters(new HttpExceptionFilter());
+  const configService = app.get(ConfigService);
   const prismaService = app.get(PrismaService);
+  const port = configService.get<number>('PORT', 3000);
 
   await prismaService.enableShutdownHooks(app);
 
@@ -24,7 +28,7 @@ async function bootstrap() {
         description: 'Enter JWT token',
         in: 'header',
       },
-      process.env.JWT_AUTH_NAME,
+      SWAGGER_BEARER_SCHEME,
     )
     .build();
 
@@ -36,6 +40,6 @@ async function bootstrap() {
     },
   });
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(port);
 }
 void bootstrap();

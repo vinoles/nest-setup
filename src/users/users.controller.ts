@@ -22,6 +22,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
+import { SWAGGER_BEARER_SCHEME } from '../common/constants/app.constants';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ListUsersQueryDto } from './dto/list-users-query.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
@@ -34,7 +35,7 @@ import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { SelfOrAdminGuard } from '../auth/self-or-admin.guard';
 
-@ApiBearerAuth(process.env.JWT_AUTH_NAME)
+@ApiBearerAuth(SWAGGER_BEARER_SCHEME)
 @UseGuards(AuthGuard)
 @ApiTags('Users')
 @Controller('api/v1/users')
