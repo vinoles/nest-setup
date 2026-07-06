@@ -80,6 +80,16 @@ JWTs are otherwise stateless. Without a revocation store, a previously issued ac
 
 Redis solves that by storing revoked `jti` values with TTL.
 
+### Redis failure behavior
+The current design uses a **fail-open** strategy for Redis blocklist reads and writes:
+
+- if Redis is unavailable during logout, the API still revokes the refresh session and returns success
+- if Redis is unavailable during protected-route checks, the API falls back to JWT signature validation and continues
+
+Tradeoff:
+- availability is preserved
+- immediate access-token revocation guarantees are temporarily degraded while Redis is down
+
 ---
 
 ## 4. Refresh flow
@@ -126,6 +136,8 @@ Without Redis blocklisting:
 - the refresh session could be revoked
 - but the current access token would still work until expiry
 
+If Redis is temporarily unavailable during logout, the refresh session is still revoked in PostgreSQL, but the current access token may remain valid until it expires naturally.
+
 ---
 
 ## 6. What Redis is and is not used for
@@ -152,11 +164,11 @@ This distinction is important because PostgreSQL and Redis have different respon
 - server-side refresh-session control
 - rotation support
 - immediate logout for access tokens through Redis blocklisting
+- graceful fail-open behavior when Redis is temporarily unavailable
 - inactive users blocked at request time
 
 ### Known tradeoffs / next improvements
-- refresh-token rotation should be hardened further against concurrency races
-- Redis failure strategy should be explicitly documented (`fail open` vs `fail closed`)
+- Redis fail-open behavior prioritizes availability over strict immediate-revocation guarantees during outages
 - integration tests should cover the full login → refresh → logout → blocked-token flow
 
 ---

@@ -45,6 +45,14 @@ describe('TokenBlocklistService', () => {
 
       expect(redisMock.set).not.toHaveBeenCalled();
     });
+
+    it('should fail open when Redis is unavailable during blocklist writes', async () => {
+      redisMock.set.mockRejectedValue(new Error('redis unavailable'));
+
+      await expect(
+        service.add('test-jti', Math.floor(Date.now() / 1000) + 900),
+      ).resolves.toBeUndefined();
+    });
   });
 
   describe('isBlocked', () => {
@@ -59,6 +67,14 @@ describe('TokenBlocklistService', () => {
 
     it('should return false when the key does not exist in Redis', async () => {
       redisMock.exists.mockResolvedValue(0);
+
+      const result = await service.isBlocked('unknown-jti');
+
+      expect(result).toBe(false);
+    });
+
+    it('should fail open when Redis is unavailable during blocklist reads', async () => {
+      redisMock.exists.mockRejectedValue(new Error('redis unavailable'));
 
       const result = await service.isBlocked('unknown-jti');
 

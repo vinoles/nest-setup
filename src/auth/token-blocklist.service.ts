@@ -1,9 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import Redis from 'ioredis';
 import { REDIS_CLIENT } from '../redis/redis.module';
 
 @Injectable()
 export class TokenBlocklistService {
+  private readonly logger = new Logger(TokenBlocklistService.name);
+
   constructor(@Inject(REDIS_CLIENT) private readonly redis: Redis) {}
 
   /**
@@ -13,7 +15,14 @@ export class TokenBlocklistService {
   async add(jti: string, exp: number): Promise<void> {
     const ttl = exp - Math.floor(Date.now() / 1000);
     if (ttl > 0) {
-      await this.redis.set(`blocklist:${jti}`, '1', 'EX', ttl);
+      try {
+        await this.redis.set(`blocklist:${jti}`, '1', 'EX', ttl);
+      } catch (error: unknown) {
+        this.logger.warn(
+          `Redis unavailable while blocklisting access token jti=${jti}. Logout will not immediately invalidate the access token.`,
+          error instanceof Error ? error.stack : String(error),
+        );
+      }
     }
   }
 
@@ -21,7 +30,15 @@ export class TokenBlocklistService {
    * Returns true if the JTI has been blocklisted (i.e. the token was logged out).
    */
   async isBlocked(jti: string): Promise<boolean> {
-    const exists = await this.redis.exists(`blocklist:${jti}`);
-    return exists === 1;
+    try {
+      const exists = await this.redis.exists(`blocklist:${jti}`);
+      return exists === 1;
+    } catch (error: unknown) {
+      this.logger.warn(
+        `Redis unavailable while checking access-token blocklist for jti=${jti}. Falling back to fail-open behavior.`,
+        error instanceof Error ? error.stack : String(error),
+      );
+      return false;
+    }
   }
 }

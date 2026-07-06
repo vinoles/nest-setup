@@ -135,11 +135,16 @@ Redis is kept intentionally as a **security infrastructure component**, not as a
 Current responsibility:
 - store revoked JWT access-token `jti` values in a short-lived blocklist
 - allow immediate access-token invalidation after logout while keeping the API stateless
+- degrade to fail-open behavior if Redis is temporarily unavailable
 
 Why this exists:
 - refresh sessions are persisted in PostgreSQL via Prisma
 - revoking a refresh token alone does **not** invalidate an already-issued access token
 - Redis gives us a TTL-backed revocation store keyed by `jti`, so logout can take effect immediately
+
+Current Redis availability tradeoff:
+- if Redis is down, the API prioritizes availability and falls back to JWT validation without blocklist enforcement
+- this means logout remains successful at the refresh-session level, but immediate access-token revocation is temporarily degraded until Redis recovers
 
 What Redis is **not** used for today:
 - refresh-token persistence
