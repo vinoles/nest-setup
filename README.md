@@ -188,11 +188,10 @@ Authorization rules are layered with:
 The `/doc` folder contains project documentation, technical decisions, and design notes that complement this README.
 
 Currently available documents:
-- `doc/access_tokens.md`
+- `doc/auth-flow.md`
 - `doc/inactive-user-auth-enforcement.md`
 - `doc/inactive-user-forbidden-response.md`
 - `doc/auth-guard-users-service-di.md`
-- `doc/observaciones.md`
 
 ## Development Notes
 - the app runs in Docker and mounts the repository into the container
