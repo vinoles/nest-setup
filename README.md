@@ -33,7 +33,7 @@ This repository is intentionally built as more than a CRUD demo. The goal is to 
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/example/nest-setup.git
+git clone https://github.com/vinoles/nest-setup.git
 cd nest-setup
 ```
 
