@@ -1,13 +1,40 @@
 # NestJS Auth + Users API
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![CI](https://github.com/vinoles/nest-setup/actions/workflows/ci.yml/badge.svg)](https://github.com/vinoles/nest-setup/actions/workflows/ci.yml)
+![Platform](https://img.shields.io/badge/runtime-Node.js%2022-339933)
+![Framework](https://img.shields.io/badge/framework-NestJS%2011-e0234e)
+![ORM](https://img.shields.io/badge/ORM-Prisma-2d3748)
+
 Production-minded NestJS backend focused on authentication, session security, and role-based user management.
 
-This project demonstrates:
+This repository is positioned as a **backend portfolio project**, not a tutorial CRUD. It demonstrates:
 - JWT access tokens with opaque refresh-session rotation
 - immediate access-token revocation through Redis-backed `jti` blocklisting
+- refresh-token reuse detection and family-wide revocation
 - role-based authorization with custom Nest guards
 - PostgreSQL persistence through Prisma
 - Docker-first local development with Bun-based tooling
+
+## Why this project matters
+
+Most NestJS sample APIs stop at login + JWT issuance. Real backend systems have harder problems:
+
+- how do you revoke a token immediately after logout?
+- how do you rotate refresh tokens without turning the database into a full session scan?
+- how do you avoid circular dependencies while keeping auth responsibilities explicit?
+- what do you prioritize if Redis is temporarily unavailable: strict revocation or API availability?
+
+This project exists to answer those questions with explicit tradeoffs and documented implementation choices.
+
+## Portfolio highlights
+
+- **Security-aware authentication model** using short-lived JWT access tokens plus opaque refresh sessions.
+- **Immediate logout semantics** through Redis-backed access-token `jti` blocklisting.
+- **Refresh-token rotation with reuse detection** to revoke a compromised session family.
+- **Architecture-driven module boundaries** with `UsersLookupModule` isolating the read-only dependency auth actually needs.
+- **Operational ergonomics** via Docker Compose, Make targets, Swagger, seed data, and environment validation.
+- **Test coverage as a credibility signal** with unit and e2e tests included in the repository.
 
 ## Why this project exists
 This repository is intentionally built as more than a CRUD demo. The goal is to show practical backend concerns such as:
@@ -24,6 +51,44 @@ This repository is intentionally built as more than a CRUD demo. The goal is to 
 - **Security infrastructure:** Redis for access-token revocation by `jti`
 - **Testing:** Jest + Supertest
 - **Container workflow:** Docker Compose
+
+## Architecture at a glance
+
+```mermaid
+flowchart LR
+    Client[Client] -->|login / refresh / logout| AuthController
+    Client -->|Bearer access token| AuthGuard
+    AuthController --> AuthService
+    AuthService --> UsersLookup[(UsersLookupService)]
+    AuthService --> RefreshSessions[(PostgreSQL + Prisma\nrefresh_sessions)]
+    AuthService --> Blocklist[(Redis blocklist\nblocklist:jti)]
+    AuthGuard --> Jwt[JWT verification]
+    AuthGuard --> Blocklist
+    AuthGuard --> UsersLookup
+    UsersController --> UsersService
+    UsersService --> UsersTable[(PostgreSQL + Prisma\nusers)]
+```
+
+## API preview
+
+Swagger documentation is available at `/api/docs` and gives a quick view of the authenticated and administrative surface of the API.
+
+![Swagger UI preview showing auth and users endpoints](doc/images/swagger-overview.png)
+
+## Public API surface
+
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/refresh`
+- `POST /api/v1/auth/logout`
+- `GET /api/v1/users`
+- `GET /api/v1/users/profile`
+- `GET /api/v1/users/:id`
+- `POST /api/v1/users`
+- `PATCH /api/v1/users/:id`
+- `PATCH /api/v1/users/:id/role`
+- `PATCH /api/v1/users/:id/status`
+
+Swagger is exposed at `/api/docs`.
 
 ## Prerequisites
 - Docker
@@ -234,6 +299,28 @@ Currently available documents:
 - **Redis fail-open behavior** prioritizes API availability when the revocation store is temporarily unavailable
 - **Auth depends on `UsersLookupModule`**, not the full `UsersModule`, to avoid circular module dependencies
 - **Email lookup is normalized** to avoid auth failures caused by casing or accidental whitespace
+
+## Verification signals
+
+- Repository includes **unit and e2e tests** under `/test`
+- Swagger docs are generated from the application itself
+- Docker Compose provisions **app + PostgreSQL + Redis** for local setup
+- Environment variables are validated with **Zod** at startup
+- CI is defined in **GitHub Actions** under `.github/workflows/ci.yml` and runs the Jest suite on pushes and pull requests
+
+## What I would improve next
+
+If this project were evolving into a production service, the next iterations would likely be:
+
+- rate limiting for auth-sensitive routes
+- observability instrumentation (structured logs, tracing, metrics)
+- stricter Redis outage strategy for environments that prefer fail-closed security
+- dedicated integration tests against real Postgres/Redis containers in CI
+- API versioning and contract checks for consumer-facing changes
+
+## License
+
+Released under the [MIT License](./LICENSE).
 
 ## Development Notes
 - the app runs in Docker and mounts the repository into the container

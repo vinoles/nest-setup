@@ -1,10 +1,27 @@
 {
-  "name": "backend-challenge-template",
+  "name": "nestjs-auth-users-api",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
-  "private": true,
-  "license": "UNLICENSED",
+  "description": "Production-minded NestJS API showcasing JWT auth, refresh-token rotation, Redis-backed revocation, and role-based user management.",
+  "author": "Vinoles",
+  "license": "MIT",
+  "keywords": [
+    "nestjs",
+    "authentication",
+    "jwt",
+    "prisma",
+    "redis",
+    "postgresql",
+    "portfolio",
+    "backend"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vinoles/nest-setup.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vinoles/nest-setup/issues"
+  },
+  "homepage": "https://github.com/vinoles/nest-setup#readme",
   "scripts": {
     "prebuild": "bun run prisma:generate",
     "build": "nest build",
@@ -17,6 +34,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "lint:check": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
