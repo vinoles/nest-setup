@@ -11,6 +11,8 @@ jobs:
   quality:
     name: Test suite
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
 
     steps:
       - name: Checkout repository
